@@ -3,209 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>True AI Image Upscaler</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/upscaler@0.21.4/dist/browser/umd/upscaler.min.js"></script>
-
+    <title>Real Cloud Upscaler</title>
     <style>
-        :root {
-            --bg: #121212;
-            --card-bg: #1e1e1e;
-            --accent: #ff4757; 
-            --text: #ffffff;
-            --text-muted: #aaaaaa;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .tool-container {
-            background-color: var(--card-bg);
-            width: 100%;
-            max-width: 600px;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-            text-align: center;
-            border: 1px solid #333;
-        }
-
-        h2 { margin-top: 0; margin-bottom: 8px; font-weight: 700; }
-        p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 15px; }
-
-        .warning-box {
-            background: rgba(255, 193, 7, 0.1);
-            border: 1px solid #ffc107;
-            color: #ffc107;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            margin-bottom: 25px;
-            text-align: left;
-        }
-
-        .warning-box i { margin-right: 5px; }
-
-        .upload-area {
-            border: 2px dashed #555;
-            border-radius: 15px;
-            padding: 50px 20px;
-            cursor: pointer;
-            background: #161616;
-            display: block;
-            transition: 0.3s;
-        }
-
-        .upload-area:hover { border-color: var(--accent); background: rgba(255, 71, 87, 0.05); }
-        .upload-area i { font-size: 45px; color: var(--accent); margin-bottom: 15px; }
-        #imgInput { display: none; }
-
-        #previewBox { margin-top: 25px; display: none; }
-        #previewImg { max-width: 100%; max-height: 300px; border-radius: 12px; object-fit: contain; border: 1px solid #333; }
-
-        .btn {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 16px 20px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-            transition: 0.3s;
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn:hover { background-color: #e84142; }
-
-        .loader-box {
-            display: none;
-            margin-top: 20px;
-            background: #252525;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #444;
-        }
-
-        .loader-box i { color: var(--accent); font-size: 28px; margin-bottom: 12px; }
-        .loader-box p { margin: 5px 0; font-size: 0.9rem; color: #ddd; }
-        .loader-step { font-size: 0.8rem; color: #888; }
+        body { background: #121212; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #1e1e1e; padding: 30px; border-radius: 12px; text-align: center; border: 1px solid #333; width: 400px; max-width: 90%; }
+        input[type="file"] { margin: 20px 0; width: 100%; color: #ccc; }
+        select { padding: 12px; width: 100%; margin-bottom: 20px; background: #333; color: white; border: none; border-radius: 6px; font-size: 16px; }
+        button { background: #ff4757; color: white; padding: 14px; border: none; width: 100%; cursor: pointer; font-weight: bold; font-size: 16px; border-radius: 8px; transition: 0.3s; }
+        button:hover { background: #e84142; }
+        #loader { display: none; margin-top: 20px; color: #ff4757; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="tool-container">
-        <h2>True AI Upscaler</h2>
-        <p class="subtitle">Powered by Real Neural Networks.</p>
-
-        <div class="warning-box">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <b>Mobile Warning:</b> AI uses heavy browser RAM. To prevent browser crashes, please upload images smaller than 800x800 pixels.
-        </div>
-
-        <label class="upload-area" id="dropZone" for="imgInput">
-            <i class="fa-solid fa-microchip"></i>
-            <h3>Select Image</h3>
-            <p style="color: #666; font-size: 0.85rem;">Max recommended size: 500kb</p>
-            <input type="file" id="imgInput" accept="image/*">
-        </label>
-
-        <div id="previewBox">
-            <img id="previewImg" alt="Preview">
-            <button class="btn" id="upscaleBtn">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Start AI Upscale
-            </button>
-        </div>
-
-        <div id="loaderBox" class="loader-box">
-            <i class="fa-solid fa-cog fa-spin"></i>
-            <p id="loaderMainText">Initializing AI Engine...</p>
-            <p class="loader-step" id="loaderSubText">Downloading AI weights (First time only ~5MB)</p>
+    <div class="box">
+        <h2>🔥 Real Server Upscaler</h2>
+        <p style="color: gray; font-size: 14px;">Cloud Power: Badi photo upload karo, bina browser crash hue upscale hogi.</p>
+        
+        <form id="uploadForm">
+            <input type="file" id="imageInput" accept="image/*" required>
+            <select id="scale">
+                <option value="2">2x Upscale (Fast)</option>
+                <option value="4">4x Upscale (Heavy/Slow)</option>
+            </select>
+            <button type="submit" id="btn">Upload & Upscale</button>
+        </form>
+        <div id="loader">
+            ⏳ Photo Server par process ho rahi hai...<br>
+            <small style="color: gray; font-weight: normal; margin-top: 5px; display: block;">File badi hui toh 10-20 second lag sakte hain, please wait.</small>
         </div>
     </div>
 
     <script>
-        const imgInput = document.getElementById('imgInput');
-        const dropZone = document.getElementById('dropZone');
-        const previewBox = document.getElementById('previewBox');
-        const previewImg = document.getElementById('previewImg');
-        const upscaleBtn = document.getElementById('upscaleBtn');
-        const loaderBox = document.getElementById('loaderBox');
-        const loaderMainText = document.getElementById('loaderMainText');
-        const loaderSubText = document.getElementById('loaderSubText');
-        
-        let originalFile = null;
-        let aiModelInstance = null; // Store AI instance
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = document.getElementById('imageInput').files[0];
+            const scale = document.getElementById('scale').value;
+            
+            if(!file) return alert("Photo select karo bhai!");
 
-        // 1. Image Selection
-        imgInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            originalFile = file;
+            document.getElementById('btn').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                previewImg.src = event.target.result;
-                dropZone.style.display = 'none';
-                previewBox.style.display = 'block';
-            }
-            reader.readAsDataURL(file);
-        });
-
-        // 2. Start AI Process (Triggered only on click)
-        upscaleBtn.addEventListener('click', async () => {
-            upscaleBtn.style.display = 'none';
-            loaderBox.style.display = 'block';
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('scale', scale);
 
             try {
-                // Initialize AI only when user clicks (saves memory on page load)
-                if (!aiModelInstance) {
-                    loaderMainText.innerText = "Loading AI Engine...";
-                    loaderSubText.innerText = "Fetching neural network model (takes a few seconds)";
-                    aiModelInstance = new Upscaler();
+                // Ye request tumhare /upscale backend route pe jayegi
+                const response = await fetch('/upscale', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error("Server error ya file bohot zyada badi hai!");
                 }
 
-                loaderMainText.innerText = "Enhancing Image...";
-                loaderSubText.innerText = "AI is generating new pixels. Please don't close the tab.";
-
-                // Run the AI model
-                const resultSrc = await aiModelInstance.upscale(previewImg);
-
-                // Download the file
-                const link = document.createElement('a');
-                link.href = resultSrc;
-                link.download = `AI_HD_${originalFile.name}`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                // Reset UI
-                loaderBox.style.display = 'none';
-                upscaleBtn.style.display = 'flex';
-                upscaleBtn.innerHTML = '<i class="fa-solid fa-check"></i> Success! Try Another';
-
-            } catch (error) {
-                console.error(error);
-                loaderBox.style.display = 'none';
-                upscaleBtn.style.display = 'flex';
-                alert("AI Processing Failed! The image might be too large for your phone's memory, or your internet connection interrupted the AI model download. Try a smaller image.");
+                // Wapas aayi HD image ko download karna
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Cloud_HD_${scale}x_${file.name}`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            } catch (err) {
+                alert("Koi dikkat aayi server pe! " + err.message);
+            } finally {
+                document.getElementById('btn').style.display = 'block';
+                document.getElementById('loader').style.display = 'none';
             }
         });
     </script>
