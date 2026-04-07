@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline AI Upscaler</title>
+    <title>Real AI Image Upscaler</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
@@ -42,112 +42,104 @@
             border: 1px solid #333;
         }
 
-        .setup-box {
-            background: rgba(255, 71, 87, 0.05);
-            border: 1px solid var(--accent);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
+        .status-bar {
+            background: #252525;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            margin-bottom: 20px;
+            color: #888;
+            border: 1px solid #333;
         }
+
+        .upload-area {
+            border: 2px dashed #444;
+            border-radius: 15px;
+            padding: 50px 20px;
+            cursor: pointer;
+            background: #161616;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .upload-area:hover { border-color: var(--accent); }
+        .upload-area i { font-size: 40px; color: var(--accent); margin-bottom: 15px; }
+        #imgInput { display: none; }
 
         .btn {
             background-color: var(--accent);
             color: white;
             border: none;
-            padding: 14px 20px;
-            border-radius: 10px;
-            font-size: 1rem;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 1.1rem;
             cursor: pointer;
             width: 100%;
-            font-weight: bold;
-            transition: 0.3s;
-            margin-top: 15px;
+            font-weight: 700;
+            margin-top: 20px;
+            display: none; /* Model load hone ke baad dikhega */
         }
 
-        .btn:disabled { background-color: #444; cursor: not-allowed; }
-
-        .upload-area {
-            border: 2px dashed #555;
-            border-radius: 15px;
-            padding: 40px 20px;
-            cursor: pointer;
-            background: #161616;
-            display: none; /* Model load hone tak hide rahega */
+        .loader-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid var(--accent);
         }
-        .upload-area:hover { border-color: var(--accent); }
-        .upload-area i { font-size: 40px; color: var(--accent); margin-bottom: 10px; }
-        #imgInput { display: none; }
 
         #previewBox { margin-top: 20px; display: none; }
-        #previewImg { max-width: 100%; max-height: 300px; border-radius: 12px; object-fit: contain; }
-
-        .status-text { font-size: 0.85rem; color: #aaa; margin-top: 10px; }
+        #previewImg { max-width: 100%; max-height: 300px; border-radius: 12px; }
     </style>
 </head>
 <body>
 
     <div class="tool-container">
-        <h2>True AI Upscaler</h2>
-        <p style="color: #888; font-size: 0.9rem; margin-bottom: 20px;">Runs 100% offline on your device after first setup.</p>
-
-        <div class="setup-box" id="setupBox">
-            <i class="fa-solid fa-download" style="font-size: 30px; color: var(--accent); margin-bottom: 10px;"></i>
-            <h3>One-Time Setup</h3>
-            <p style="font-size: 0.85rem; color: #ccc;">Download the AI model to your device memory (approx. 5MB). It will stay saved permanently for instant offline use.</p>
-            <button class="btn" id="downloadModelBtn">Download AI Engine</button>
-            <div class="status-text" id="dlStatus"></div>
+        <div class="status-bar" id="engineStatus">
+            <i class="fa-solid fa-gear fa-spin"></i> Initializing AI Engine...
         </div>
 
+        <h2>True AI Upscaler</h2>
+        
         <label class="upload-area" id="dropZone" for="imgInput">
-            <i class="fa-regular fa-image"></i>
+            <i class="fa-solid fa-cloud-arrow-up"></i>
             <h3>Select Photo</h3>
+            <p style="color: #666; font-size: 0.8rem;">Neural Network Enhancement</p>
             <input type="file" id="imgInput" accept="image/*">
         </label>
 
         <div id="previewBox">
             <img id="previewImg">
-            <button class="btn" id="upscaleBtn" style="margin-top: 15px;"><i class="fa-solid fa-wand-sparkles"></i> Upscale Image</button>
-            <div class="status-text" id="processStatus" style="display: none; color: var(--accent); font-weight: bold;">
-                <i class="fa-solid fa-spinner fa-spin"></i> Enhancing image...
-            </div>
+            <button class="btn" id="upscaleBtn">ENHANCE 2X (AI)</button>
+        </div>
+
+        <div id="loaderBox" class="loader-box">
+            <i class="fa-solid fa- wand-magic-sparkles fa-beat"></i>
+            <p style="margin: 10px 0 0 0; font-weight: bold;">AI Magic in Progress...</p>
+            <p style="font-size: 0.7rem; color: #aaa;">Don't close the tab. This takes 10-20 seconds.</p>
         </div>
     </div>
 
     <script>
-        const downloadModelBtn = document.getElementById('downloadModelBtn');
-        const dlStatus = document.getElementById('dlStatus');
-        const setupBox = document.getElementById('setupBox');
-        const dropZone = document.getElementById('dropZone');
+        const engineStatus = document.getElementById('engineStatus');
+        const upscaleBtn = document.getElementById('upscaleBtn');
         const imgInput = document.getElementById('imgInput');
+        const loaderBox = document.getElementById('loaderBox');
         const previewBox = document.getElementById('previewBox');
         const previewImg = document.getElementById('previewImg');
-        const upscaleBtn = document.getElementById('upscaleBtn');
-        const processStatus = document.getElementById('processStatus');
+        const dropZone = document.getElementById('dropZone');
 
         let upscaler;
 
-        // User jab button dabayega, tabhi model phone me save hoga
-        downloadModelBtn.addEventListener('click', async () => {
-            downloadModelBtn.disabled = true;
-            dlStatus.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Downloading to device memory...';
-            
-            try {
-                upscaler = new Upscaler();
-                // Warmup command forces the model to download and cache permanently
-                await upscaler.warmup([{ size: [200, 200] }]); 
-                
-                // Setup box hide kardo aur Upload open kardo
-                setupBox.style.display = 'none';
-                dropZone.style.display = 'block';
+        // 1. AI Model Load Karo
+        try {
+            upscaler = new Upscaler();
+            engineStatus.innerHTML = '<i class="fa-solid fa-check-circle" style="color:#4cd137"></i> AI Engine Ready';
+        } catch (e) {
+            engineStatus.innerHTML = '<i class="fa-solid fa-times-circle" style="color:red"></i> Error Loading AI Engine';
+        }
 
-            } catch (err) {
-                dlStatus.innerHTML = '<span style="color:red;">Error! Make sure you are testing on a LIVE WEBSITE, not a local file.</span>';
-                console.error(err);
-                downloadModelBtn.disabled = false;
-            }
-        });
-
-        // Image Selection
         imgInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -156,30 +148,31 @@
                     previewImg.src = event.target.result;
                     previewBox.style.display = 'block';
                     dropZone.style.display = 'none';
+                    upscaleBtn.style.display = 'block';
                 }
                 reader.readAsDataURL(file);
             }
         });
 
-        // Run AI
         upscaleBtn.addEventListener('click', async () => {
             upscaleBtn.style.display = 'none';
-            processStatus.style.display = 'block';
+            loaderBox.style.display = 'block';
 
             try {
-                const result = await upscaler.upscale(previewImg);
+                // Asli AI process yahan ho raha hai
+                const result = await upscaler.upscale(previewImg.src);
                 
                 const link = document.createElement('a');
                 link.href = result;
                 link.download = "AI_Enhanced.png";
                 link.click();
 
-                processStatus.style.display = 'none';
+                loaderBox.style.display = 'none';
                 upscaleBtn.style.display = 'block';
-                upscaleBtn.innerHTML = "<i class='fa-solid fa-check'></i> Done! Upscale Another";
+                upscaleBtn.innerHTML = "DONE! TRY ANOTHER";
             } catch (err) {
-                alert("Failed! Try a smaller image.");
-                processStatus.style.display = 'none';
+                alert("Processing failed! Photo might be too heavy for mobile browser.");
+                loaderBox.style.display = 'none';
                 upscaleBtn.style.display = 'block';
             }
         });
